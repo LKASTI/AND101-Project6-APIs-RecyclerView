@@ -31,19 +31,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/name" />
 
-        android:scaleType="centerCrop"
 
 
     <ImageView
         android:id="@+id/image1"
 
-        android:layout_width="300dp"
-        android:layout_height="300dp"
+
 
         app:layout_constraintBottom_toTopOf="@id/name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+
+        android:layout_width="300dp"
+        android:layout_height="300dp"
 
         android:scaleType="centerCrop"
 

@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "and101-Project5-MarvelAPI"
+rootProject.name = "and101-Project5-APIs"
 include ':app'
