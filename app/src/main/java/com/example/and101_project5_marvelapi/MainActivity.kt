@@ -8,6 +8,8 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.load.DataSource
@@ -26,93 +28,88 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    private var imageUrl : String = ""
-    private var nameText : String = ""
-    private var descText : String = ""
-    private var rand : Int = 0
-
-    @GlideModule
-    class MyAppGlideModule : AppGlideModule() {
-
-    }
+    private lateinit var characterList : MutableList<JSONObject>
+    private lateinit var rvCharacters : RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val button = findViewById<Button>(R.id.test_button)
-        val name = findViewById<TextView>(R.id.name)
-        val description = findViewById<TextView>(R.id.description)
-        val image = findViewById<ImageView>(R.id.image1)
+        characterList = mutableListOf()
+        rvCharacters = findViewById(R.id.character_list)
 
-        button.setOnClickListener{
-                getResponse()
-
-                setImage(image)
-                name.text = nameText
-                description.text = descText
-
-        }
-
+        getResponse()
 
     }
-
-    private fun setImage(imageView: ImageView){
-        Glide.with(this)
-            .load(imageUrl)
-            .fitCenter()
-            .override(300, 300)
-            .listener(object : RequestListener<Drawable?> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    Log.d("glide exception:", "$e")
-                    return false
-                }
-
-                override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable?>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    return false
-                }
-            })
-            .into(imageView)
-    }
-
 
     private fun getResponse(){
         val client = AsyncHttpClient()
 
-        client["https://api.jikan.moe/v4/random/characters",
-            object : JsonHttpResponseHandler(){
-                override fun onFailure(
-                    statusCode: Int,
-                    headers: Headers?,
-                    response: String?,
-                    throwable: Throwable?
-                ) {
-                    Log.d("Fail", response.toString())
-                }
+        client["https://api.jikan.moe/v4/anime/1/characters",
+                object : JsonHttpResponseHandler(){
+                    override fun onFailure(
+                        statusCode: Int,
+                        headers: Headers?,
+                        response: String?,
+                        throwable: Throwable?
+                    ) {
+                        Log.d("Fail", response.toString())
+                    }
 
-                override fun onSuccess(statusCode: Int, headers: Headers?, json: JsonHttpResponseHandler.JSON) {
-                    imageUrl = json.jsonObject.getJSONObject("data").getJSONObject("images").getJSONObject("jpg").getString("image_url")
-                    nameText = json.jsonObject.getJSONObject("data").getString("name")
+                    override fun onSuccess(statusCode: Int, headers: Headers?, json: JsonHttpResponseHandler.JSON) {
+                        val characterArray = json.jsonObject.getJSONArray("data")
 
-                    descText =
-                        if(json.jsonObject.getJSONObject("data").getString("about") == "") {
-                            json.jsonObject.getJSONObject("data").getString("name_kanji")
-                        } else {
-                            json.jsonObject.getJSONObject("data").getString("about")
+                        for(i in 0 until characterArray.length())
+                        {
+                            var character = JSONObject()
+                            val obj = characterArray.getJSONObject(i)
+                            character.put("name", "name: " + obj.getJSONObject("character").getString("name"))
+                            character.put("role", "role: " +obj.getString("role")+ " character")
+                            character.put("image_url", obj.getJSONObject("character").getJSONObject("images")
+                                .getJSONObject("webp").getString("image_url"))
+
+                            characterList.add(character)
                         }
-                }
-            }]
+
+                        var adapter = CharacterAdapter(characterList)
+                        rvCharacters.adapter = adapter
+                        rvCharacters.layoutManager = LinearLayoutManager(this@MainActivity)
+//                        Log.d("list ", "$characterList")
+
+                    }
+                }]
 
     }
+
+//    private fun setImage(imageView: ImageView){
+//        Glide.with(this)
+//            .load(imageUrl)
+//            .fitCenter()
+//            .override(300, 300)
+//            .listener(object : RequestListener<Drawable?> {
+//                override fun onLoadFailed(
+//                    e: GlideException?,
+//                    model: Any?,
+//                    target: com.bumptech.glide.request.target.Target<Drawable?>?,
+//                    isFirstResource: Boolean
+//                ): Boolean {
+//                    Log.d("glide exception:", "$e")
+//                    return false
+//                }
+//
+//                override fun onResourceReady(
+//                    resource: Drawable?,
+//                    model: Any?,
+//                    target: Target<Drawable?>?,
+//                    dataSource: DataSource?,
+//                    isFirstResource: Boolean
+//                ): Boolean {
+//                    return false
+//                }
+//            })
+//            .into(imageView)
+//    }
+
+
+
 }
